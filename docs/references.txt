@@ -1,0 +1,22 @@
+General
+=======
+Write Your Own Operating System [FAQ] - http://www.superfrink.net/athenaeum/OS-FAQ/os-faq.html
+Comunity for writing Operating Systems - https://wiki.osdev.org
+
+Serial ports
+============
+https://wiki.osdev.org/Serial_Ports
+https://en.wikibooks.org/wiki/Serial_Programming/8250_UART_Programming
+
+BIOS functions
+==============
+https://en.wikipedia.org/wiki/BIOS_interrupt_call
+https://wiki.osdev.org/BIOS
+video display: https://en.wikipedia.org/wiki/INT_10H
+hard disk: https://wiki.osdev.org/ATA_in_x86_RealMode_(BIOS)
+http://www.ctyme.com/intr/int.htm
+
+Physical memory
+===============
+https://wiki.osdev.org/Memory_Map_(x86)
+https://wiki.osdev.org/Detecting_Memory_(x86)#Detecting_Low_Memory
