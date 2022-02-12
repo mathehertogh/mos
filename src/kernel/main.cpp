@@ -1,5 +1,5 @@
 
-int main() __attribute__((section ("entry")));
+int main() __attribute__((section (".entry")));
 
 int main() {
 	int x;

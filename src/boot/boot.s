@@ -11,7 +11,7 @@ _start:
 
     /* Save the drive number.
      */
-    movb %dl, drive_number
+    movb %dl, (boot_drive_number)
 
     /* Set up a stack for our bootloader at (..., 0x7c00].
      * TODO stack segment?
@@ -53,7 +53,7 @@ load_second_stage:
      */
     movw $disk_address_packet, %si
     movb $0x42, %ah
-    movb drive_number, %dl 
+    movb (boot_drive_number), %dl 
     int $0x13
     nop
     nop
@@ -90,5 +90,5 @@ msg:
     .ascii "Welcome to Mathe's OS!"
     msg_len = . - msg
 
-drive_number:
+boot_drive_number:
     .byte 0x0
