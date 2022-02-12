@@ -1,5 +1,6 @@
 .code16
 
+KERNEL_NO_SECTORS = 0x7c00 + 512 - 4;
 
 .section .text
 
@@ -28,41 +29,42 @@ _start:
 
     /* Print welcome message to the screen.
      */
-    movw $msg, %ax
-    movw $msg_len, %bx
+    movw $welcome_msg, %ax
+    movw $welcome_msg_len, %bx
     call screen_puts
 
-    /* Read the second sector from the disk into [0x7d00, 0x7e00).
+    /* Put the kernel at [0x8000, ...).
      */
     movw $1, %ax
-    movw $1, %bx
-    movw $0x7d00, %cx
+    movw (KERNEL_NO_SECTORS), %bx
+    movw $0x8000, %cx
     movw (boot_drive_number), %dx
     call disk_read
-    nop
-    nop
-    nop
-    nop
 
-    /* jump to the second stage of our bootloader.
+    /* Obtain the memory map from the BIOS.
      */
-    jmp 0x00007d00
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
+    movw (mmap_entries), %ax
+    call mmap_get
+    movw %ax, (mmap_size)
+
+    /* In order to access memory above 1MiB, we enable the A20-line.
+     */
+    call a20_enable
+
+    hlt
+
 
 
 .section .data
 
-msg:
-    .ascii "Welcome to Mathe's OS!"
-    msg_len = . - msg
+.align 2
+mmap:
+    mmap_entries: .2byte 0x500
+    mmap_size:    .2byte 0x0
 
 boot_drive_number:
     .byte 0x0
+
+welcome_msg:
+    .ascii "Welcome to Mathe's OS!"
+    welcome_msg_len = . - welcome_msg

@@ -5,16 +5,19 @@ run: mos
 debug: mos
 	qemu-system-i386 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio -nographic -S -gdb tcp::1234
 
-mos: boot kernel
+mos: kernel boot 
 	cat build/boot/boot.img build/kernel/kernel.img > build/mos.img
 	truncate -s 5M build/mos.img
 
-boot: build_dirs src/boot/boot.s src/boot/boot.ld
+boot: build_dirs kernel src/boot/boot.s src/boot/screen.s src/boot/disk.s src/boot/mmap.s src/boot/a20.s src/boot/boot.ld
 	x86_64-elf-g++ -o build/boot/boot.o -nostdlib -c -m32 src/boot/boot.s
-	x86_64-elf-g++ -o build/boot/bios/screen_puts.o -nostdlib -c -m32 src/boot/bios/screen_puts.s
-	x86_64-elf-g++ -o build/boot/bios/disk_read.o -nostdlib -c -m32 src/boot/bios/disk_read.s
-	x86_64-elf-ld -o build/boot/boot.elf --script src/boot/boot.ld -N -m32 -melf_i386 -static build/boot/boot.o build/boot/bios/screen_puts.o build/boot/bios/disk_read.o
+	x86_64-elf-g++ -o build/boot/screen.o -nostdlib -c -m32 src/boot/screen.s
+	x86_64-elf-g++ -o build/boot/disk.o -nostdlib -c -m32 src/boot/disk.s
+	x86_64-elf-g++ -o build/boot/mmap.o -nostdlib -c -m32 src/boot/mmap.s
+	x86_64-elf-g++ -o build/boot/a20.o -nostdlib -c -m32 src/boot/a20.s
+	x86_64-elf-ld -o build/boot/boot.elf --script src/boot/boot.ld -N -m32 -melf_i386 -static build/boot/boot.o build/boot/screen.o build/boot/disk.o build/boot/mmap.o build/boot/a20.o
 	objcopy -O binary build/boot/boot.elf build/boot/boot.img
+	python3 src/boot/insert_kernel_no_sectors.py
 
 kernel: src/kernel/kernel.ld src/kernel/main.cpp
 	x86_64-elf-g++ -o build/kernel/main.o -nostdlib -static -fno-common -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -m32 -c src/kernel/main.cpp
@@ -22,7 +25,7 @@ kernel: src/kernel/kernel.ld src/kernel/main.cpp
 	objcopy -O binary build/kernel/kernel.elf build/kernel/kernel.img
 
 build_dirs:
-	mkdir -p build/boot/bios
+	mkdir -p build/boot
 	mkdir -p build/kernel
 
 clean:

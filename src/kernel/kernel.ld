@@ -2,13 +2,18 @@ OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS
 {
-    /* Let us load the kernel at 0x7d00, right after the bootloader.
-     */
-    . = 0x7d00;
-    .kernel : AT(ADDR(.kernel)) {
+    . = 0x8000;
+    .text : AT(ADDR(.text)) {
         *(.entry)
         *(.text)
+    }
+
+    .data ALIGN(4K) : ALIGN(4K) {
         *(.data)
+    }
+
+    .rodata ALIGN(4K) : ALIGN(4K) {
+        *(.rodata)
     }
 
     /DISCARD/ :

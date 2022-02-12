@@ -10,6 +10,15 @@ SECTIONS
         *(.text)
         *(.data)
     }
+
+    /* After compiling the kernel, we write the number of sectors that the
+     * kernel consists of in these two bytes. The boodloader uses this data to
+     * load the kernel into memory.
+     */
+    . = 0x7c00 + 512 - 4;
+    .kernel_no_sectors : AT(ADDR(.kernel_no_sectors)) {
+        SHORT(0x0)
+    }
     
     /* For the BIOS to recognize the first sector on the disk as a boot laoder,
      * the last two bytes must contain a magic number: the boot signature.
