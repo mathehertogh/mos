@@ -11,7 +11,9 @@ mos: boot kernel
 
 boot: build_dirs src/boot/boot.s src/boot/boot.ld
 	x86_64-elf-g++ -o build/boot/boot.o -nostdlib -c -m32 src/boot/boot.s
-	x86_64-elf-ld -o build/boot/boot.elf --script src/boot/boot.ld -N -m32 -melf_i386 -static build/boot/boot.o
+	x86_64-elf-g++ -o build/boot/bios/screen_puts.o -nostdlib -c -m32 src/boot/bios/screen_puts.s
+	x86_64-elf-g++ -o build/boot/bios/disk_read.o -nostdlib -c -m32 src/boot/bios/disk_read.s
+	x86_64-elf-ld -o build/boot/boot.elf --script src/boot/boot.ld -N -m32 -melf_i386 -static build/boot/boot.o build/boot/bios/screen_puts.o build/boot/bios/disk_read.o
 	objcopy -O binary build/boot/boot.elf build/boot/boot.img
 
 kernel: src/kernel/kernel.ld src/kernel/main.cpp
@@ -20,7 +22,7 @@ kernel: src/kernel/kernel.ld src/kernel/main.cpp
 	objcopy -O binary build/kernel/kernel.elf build/kernel/kernel.img
 
 build_dirs:
-	mkdir -p build/boot
+	mkdir -p build/boot/bios
 	mkdir -p build/kernel
 
 clean:
