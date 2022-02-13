@@ -38,7 +38,7 @@ protected_mode_activate:
 .section .data
 
 /* Attributes of segment descriptors.
- * See e.g. [AMD 4.7] for details.
+ * See e.g. AMD systems manual 4.7 for details.
  */
 ACCESSED        = 0x1 << 0
 READABLE        = 0x1 << 1 /* for code descriptors */

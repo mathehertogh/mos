@@ -19,9 +19,9 @@ boot: build_dirs kernel src/boot/boot.s src/boot/screen.s src/boot/disk.s src/bo
 	x86_64-elf-g++ -o build/boot/protected_mode.o -nostdlib -c -m32 src/boot/protected_mode.s
 	x86_64-elf-ld -o build/boot/boot.elf --script src/boot/boot.ld -N -m32 -melf_i386 -static build/boot/boot.o build/boot/screen.o build/boot/disk.o build/boot/mmap.o build/boot/a20.o build/boot/nmi.o build/boot/protected_mode.o
 	objcopy -O binary build/boot/boot.elf build/boot/boot.img
-	python3 src/boot/insert_kernel_no_sectors.py
+	python3 src/boot/patch_sector_count.py
 
-kernel: src/kernel/kernel.ld src/kernel/main.cpp
+kernel: build_dirs src/kernel/kernel.ld src/kernel/main.cpp
 	x86_64-elf-g++ -o build/kernel/main.o -nostdlib -static -fno-common -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -m32 -c src/kernel/main.cpp
 	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -m32 -melf_i386 -static build/kernel/main.o
 	objcopy -O binary build/kernel/kernel.elf build/kernel/kernel.img

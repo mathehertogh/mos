@@ -12,19 +12,4 @@ Physcial memory
 ===============
 Create physical memory allocator.
 
-Physical memory layout plan is:
 
-
-:        ....        :
-|       kernel       |
-|--------------------| 0x100000
-|                    |
-:        ....        :
-|                    |
-|--------------------| 
-| bootloader phase 2 |
-|--------------------| 0x7d00
-| bootloader phase 1 |
-| -------------------| 0x7c00
-|  bootloader stack  |
-:        ....        :

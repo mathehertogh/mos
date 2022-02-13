@@ -1,7 +1,5 @@
 .code16
 
-KERNEL_NO_SECTORS = 0x7c00 + 512 - 4;
-
 .section .text
 
 .global _start
@@ -34,10 +32,12 @@ _start:
     movw $welcome_msg_len, %bx
     call screen_puts
 
-    /* Put the kernel at [0x8000, ...).
+    /* Put the initial page tables at [0x8000, 0xb000) and put the kernel at
+     * [0xb000, ...). Note that the second sector contains gargabe, so we start
+     * from the third sector (sector 2).
      */
-    movw $1, %ax
-    movw (KERNEL_NO_SECTORS), %bx
+    movw $2, %ax
+    movw (sector_count), %bx
     movw $0x8000, %cx
     movw (boot_drive_number), %dx
     call disk_read

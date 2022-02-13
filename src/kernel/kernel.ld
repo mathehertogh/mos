@@ -2,7 +2,7 @@ OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS
 {
-    . = 0x8000;
+    . = 0xb000;
     .text : AT(ADDR(.text)) {
         *(.entry)
         *(.text)
