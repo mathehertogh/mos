@@ -9,6 +9,7 @@ _start:
     /* Disable interrupts during boot.
      */
     cli
+    call nmi_disable
 
     /* Save the boot drive number.
      */
@@ -50,6 +51,8 @@ _start:
     /* In order to access memory above 1MiB, we enable the A20-line.
      */
     call a20_enable
+
+    call protected_mode_activate
 
     hlt
 
