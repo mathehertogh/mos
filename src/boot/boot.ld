@@ -36,7 +36,8 @@ SECTIONS
     /* After the bootloader sector, we put the initial page tables.
      * They represent an identity map [0, 2MiB) --> [0, 2MiB).
      */
-    . = 0x8000;
+    pml4 = 0x8000;
+    . = pml4;
     .pml4 : AT(ADDR(.pml4)) {
         QUAD(0x9003); /* Present, Writable; first entry points to PTDP at 0x9000 */
         . = 0x1000;

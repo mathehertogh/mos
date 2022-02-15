@@ -54,6 +54,8 @@ _start:
 
     call protected_mode_activate
 
+    call long_mode_activate
+
     hlt
 
 

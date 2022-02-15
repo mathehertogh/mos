@@ -21,13 +21,13 @@ mmap_get:
 	push %di
 	push %ax
 
-	mov $0, %ebx
-	mov $0x534d4150, %edx
+	movl $0, %ebx
+	movl $0x534d4150, %edx
 	movw %ax, %di
 
 1:
 	movw $0xe820, %ax
-	mov $MMAP_ENTRY_SIZE, %ecx
+	movl $MMAP_ENTRY_SIZE, %ecx
 	int $0x15
 
 	jc .error

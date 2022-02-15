@@ -16,8 +16,8 @@ boot: build_dirs kernel src/boot/boot.s src/boot/screen.s src/boot/disk.s src/bo
 	x86_64-elf-g++ -o build/boot/mmap.o -nostdlib -c -m32 src/boot/mmap.s
 	x86_64-elf-g++ -o build/boot/a20.o -nostdlib -c -m32 src/boot/a20.s
 	x86_64-elf-g++ -o build/boot/nmi.o -nostdlib -c -m32 src/boot/nmi.s
-	x86_64-elf-g++ -o build/boot/protected_mode.o -nostdlib -c -m32 src/boot/protected_mode.s
-	x86_64-elf-ld -o build/boot/boot.elf --script src/boot/boot.ld -N -m32 -melf_i386 -static build/boot/boot.o build/boot/screen.o build/boot/disk.o build/boot/mmap.o build/boot/a20.o build/boot/nmi.o build/boot/protected_mode.o
+	x86_64-elf-g++ -o build/boot/mode.o -nostdlib -c -m32 src/boot/mode.s
+	x86_64-elf-ld -o build/boot/boot.elf --script src/boot/boot.ld -N -m32 -melf_i386 -static build/boot/boot.o build/boot/screen.o build/boot/disk.o build/boot/mmap.o build/boot/a20.o build/boot/nmi.o build/boot/mode.o
 	objcopy -O binary build/boot/boot.elf build/boot/boot.img
 	python3 src/boot/patch_sector_count.py
 
