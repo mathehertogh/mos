@@ -24,7 +24,6 @@ mmap_get:
 	movl $0, %ebx
 	movl $0x534d4150, %edx
 	movw %ax, %di
-
 1:
 	movw $0xe820, %ax
 	movl $MMAP_ENTRY_SIZE, %ecx
@@ -47,14 +46,16 @@ mmap_get:
 	pop %di
 	ret
 
-
 .error:
 	movw $mmap_error_msg, %ax
 	movw $mmap_error_msg_len, %bx
 	call screen_puts
 	hlt
 
+
+
 .section .data
+
 mmap_error_msg:
     .ascii "Fatal error: failed to obtain memory map"
     mmap_error_msg_len = . - mmap_error_msg

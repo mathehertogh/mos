@@ -21,7 +21,6 @@ _start:
     movw %ax, %es
     movw %ax, %ss
     ljmp $0, $1f
-
 1:
     /* Set up a stack for our bootloader at (..., 0x7c00].
      */
@@ -47,11 +46,16 @@ _start:
      */
     movw (mmap_entries), %ax
     call mmap_get
-    movw %ax, (mmap_size)
+    movw %ax, (mmap_len)
 
     /* In order to access memory above 1MiB, we enable the A20-line.
      */
     call a20_enable
+
+    /* Prepare data to be passed on to the kernel.
+     */
+    movw (boot_drive_number), %di
+    movl $mmap, %esi
 
     call protected_mode_activate
 
@@ -59,19 +63,19 @@ _start:
 
     .code64
     movq $KERNEL_MAIN, %rax
-    jmp %rax
+    jmp *%rax
 
 
 
 .section .data
 
+boot_drive_number:
+    .2byte 0x0
+
 .align 2
 mmap:
-    mmap_entries: .2byte 0x500
-    mmap_size:    .2byte 0x0
-
-boot_drive_number:
-    .byte 0x0
+    mmap_entries: .8byte 0x500
+    mmap_len:     .2byte 0x0
 
 welcome_msg:
     .ascii "Welcome to Mathe's OS!"

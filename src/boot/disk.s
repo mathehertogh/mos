@@ -9,9 +9,9 @@
  *   ax - starting sector
  *   bx - number of sectors to read
  *   cx - destination memory address
- *   dx - boot drive number
+ *   dx - disk drive number
  */
- .global disk_read
+.global disk_read
 disk_read:
 	push %si
 
@@ -28,6 +28,7 @@ disk_read:
 
     pop %si
     ret
+
 
 
 .section .data

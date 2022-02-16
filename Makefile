@@ -22,8 +22,8 @@ boot: build_dirs kernel src/boot/boot.s src/boot/screen.s src/boot/disk.s src/bo
 	python3 src/boot/patch_sector_count.py
 
 kernel: build_dirs src/kernel/kernel.ld src/kernel/main.cpp
-	x86_64-elf-g++ -o build/kernel/main.o -nostdlib -static -fno-common -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -m32 -c src/kernel/main.cpp
-	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -m32 -melf_i386 -static build/kernel/main.o
+	x86_64-elf-g++ -o build/kernel/main.o -nostdlib -static -fno-common -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -O1 -c src/kernel/main.cpp
+	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -static build/kernel/main.o
 	objcopy -O binary build/kernel/kernel.elf build/kernel/kernel.img
 
 build_dirs:

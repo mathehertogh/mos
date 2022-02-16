@@ -42,6 +42,8 @@ protected_mode_activate:
  *
  * Switch from protected mode to 64-bit long mode.
  *
+ * WARNING: TSS, IDT and interrupt handlers are _not_ set up. 
+ *
  * REFERENCES:
  *   AMD system manual 14.4
  *   Intel system manual 9.9.1
@@ -95,6 +97,7 @@ long_mode_activate:
 	 */
 	push %rbx
 	ret
+
 
 
 .section .data

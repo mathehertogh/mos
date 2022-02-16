@@ -1,5 +1,3 @@
-OUTPUT_FORMAT(elf32-i386)
-
 SECTIONS
 {
     /* The BIOS will load the bootloader (i.e. the first sector on the disk) at
