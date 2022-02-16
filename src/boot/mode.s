@@ -72,15 +72,28 @@ long_mode_activate:
 	orl $CR0_PAGING_ENABLE, %eax
 	movl %eax, %cr0
 
-	/* Far jump to (re-)load the code segment. This jump is required by the
-	 * hardware. Note that we use the same code segment as before. The L-bit
-	 * (LONG_16BIT_MODE) was already set, but as that bit is reserverd in
-	 * protected mode, it was ignored until now. Now that we activated long mode
-	 * the L-bit signifies that we run in 16-bit mode (as oposed to
-	 * compatibility mode).
+	/* Perform a hardware-required code segment reload.
 	 */
 	ljmp $CODE_SELECTOR, $1f
 1:
+	/* We are now running in compatibility mode. Before we switch to 64-bit long
+	 * mode, we save the 16-bit return address.
+	 */
+	pop %bx
+
+	/* Set the long mode bit in our code descriptor and reload it as our segment
+	 * selector, to switch to 64-bit long mode.
+	 */
+	movw (code_descr+5), %ax
+	orw $LONG_MODE, %ax
+	movw %ax, (code_descr+5)
+
+	ljmp $CODE_SELECTOR, $2f
+2:
+	.code64
+	/* Push our return address as a 64-bit address onto the stack and return.
+	 */
+	push %rbx
 	ret
 
 
@@ -100,20 +113,20 @@ USER_TYPE       = 0x1 << 4
 USER_PRIVILEDGE = 0x3 << 5
 PRESENT         = 0x1 << 7
 MAX_LIMIT       = 0xf << 8
-LONG_64BIT_MODE = 0x1 << 13 /* only interpreted in long mode */
+LONG_MODE       = 0x1 << 13
 OPSIZE_32BIT    = 0x1 << 14
 PAGE_GRANULAR   = 0x1 << 15
 
 gdt:
-	null:
+	null_descr:
 		.8byte 0
-	code:
+	code_descr:
 		.2byte 0xffff /* limit */
 		.2byte 0x0    /* base */
 		.byte 0x0     /* base */
 		.2byte READABLE | CODE | USER_TYPE | PRESENT | MAX_LIMIT
 		.byte 0x0     /* base */
-	data:
+	data_descr:
 		.2byte 0xffff /* limit */
 		.2byte 0x0    /* base */
 		.byte 0x0     /* base */

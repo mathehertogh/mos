@@ -1,6 +1,7 @@
 .code16
-
 .section .text
+
+KERNEL_MAIN = 0xb000
 
 .global _start
 _start:
@@ -56,7 +57,9 @@ _start:
 
     call long_mode_activate
 
-    hlt
+    .code64
+    movq $KERNEL_MAIN, %rax
+    jmp %rax
 
 
 

@@ -1,9 +1,9 @@
 
 run: mos
-	qemu-system-i386 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio
+	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio
 
 debug: mos
-	qemu-system-i386 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio -nographic -S -gdb tcp::1234
+	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio -nographic -S -gdb tcp::1234
 
 mos: kernel boot 
 	cat build/boot/boot.img build/kernel/kernel.img > build/mos.img
