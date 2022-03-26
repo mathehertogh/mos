@@ -22,6 +22,8 @@ int kernel_main(uint16_t boot_drive_number, char *mmap)
 	// TODO initialize .bss section with zeros?
 	call_global_constructors();
 
+	gdt_init();
+
 	while(true);
 
 	return 0;

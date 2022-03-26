@@ -1,4 +1,6 @@
 
+CCFLAGS := -g -Og -nostdlib -static -fno-common -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -Isrc/include -std=c++2a -mno-sse
+
 run: mos
 	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio
 
@@ -21,9 +23,11 @@ boot: build_dirs kernel src/boot/boot.s src/boot/screen.s src/boot/disk.s src/bo
 	objcopy -O binary build/boot/boot.elf build/boot/boot.img
 	python3 src/boot/patch_sector_count.py
 
-kernel: build_dirs src/kernel/kernel.ld src/kernel/main.cpp
-	x86_64-elf-g++ -o build/kernel/main.o -nostdlib -static -fno-common -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -O1 -c src/kernel/main.cpp
-	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -static build/kernel/main.o
+kernel: build_dirs src/kernel/kernel.ld src/kernel/main.cpp src/kernel/segmentation.cpp src/kernel/set_cs.s
+	x86_64-elf-g++ -o build/kernel/main.o $(CCFLAGS) -c src/kernel/main.cpp
+	x86_64-elf-g++ -o build/kernel/segmentation.o $(CCFLAGS) -c src/kernel/segmentation.cpp
+	x86_64-elf-g++ -o build/kernel/set_cs.o $(CCFLAGS) -c src/kernel/set_cs.s
+	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -static build/kernel/main.o build/kernel/segmentation.o build/kernel/set_cs.o
 	objcopy -O binary build/kernel/kernel.elf build/kernel/kernel.img
 
 build_dirs:
