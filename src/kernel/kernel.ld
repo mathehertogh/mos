@@ -7,6 +7,10 @@ SECTIONS
     }
 
     .data ALIGN(4K) : ALIGN(4K) {
+        *(.bss)
+    }
+
+    .data ALIGN(4K) : ALIGN(4K) {
         *(.data)
     }
 
@@ -14,8 +18,15 @@ SECTIONS
         *(.rodata)
     }
 
-    /DISCARD/ :
-    {
-        *(*)
+    .ctors : AT(ADDR(.ctors)) {
+        ctors = .;
+        *(.ctors)
     }
+
+    /*
+     * /DISCARD/ :
+     * {
+     *     *(*)
+     * }
+     */
 }
