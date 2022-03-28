@@ -1,5 +1,6 @@
 #include <types.h>
 #include <segmentation.h>
+#include <device/serial_port.h>
 
 int y = 5;
 
@@ -22,7 +23,11 @@ int kernel_main(uint16_t boot_drive_number, char *mmap)
 	// TODO initialize .bss section with zeros?
 	call_global_constructors();
 
-	gdt_init();
+	// TODO fix far jump in set_cs() and uncomment gdt_init().
+	// gdt_init();
+
+	SerialPort sp(COM1_PORT);
+	sp.send("hallo hallo mathe hier\n");
 
 	while(true);
 

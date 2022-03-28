@@ -2,7 +2,7 @@
 CCFLAGS := -g -Og -nostdlib -static -fno-common -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -Isrc/include -std=c++2a -mno-sse
 
 run: mos
-	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio
+	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio -nographic
 
 debug: mos
 	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio -nographic -S -gdb tcp::1234
@@ -27,12 +27,13 @@ kernel: build_dirs src/kernel/kernel.ld src/kernel/main.cpp src/kernel/segmentat
 	x86_64-elf-g++ -o build/kernel/main.o $(CCFLAGS) -c src/kernel/main.cpp
 	x86_64-elf-g++ -o build/kernel/segmentation.o $(CCFLAGS) -c src/kernel/segmentation.cpp
 	x86_64-elf-g++ -o build/kernel/set_cs.o $(CCFLAGS) -c src/kernel/set_cs.s
-	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -static build/kernel/main.o build/kernel/segmentation.o build/kernel/set_cs.o
+	x86_64-elf-g++ -o build/kernel/device/serial_port.o $(CCFLAGS) -c src/kernel/device/serial_port.cpp
+	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -static build/kernel/main.o build/kernel/segmentation.o build/kernel/set_cs.o build/kernel/device/serial_port.o
 	objcopy -O binary build/kernel/kernel.elf build/kernel/kernel.img
 
 build_dirs:
 	mkdir -p build/boot
-	mkdir -p build/kernel
+	mkdir -p build/kernel/device
 
 clean:
 	-rm -r ./build
