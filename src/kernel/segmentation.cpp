@@ -2,7 +2,7 @@
 
 extern "C" void set_cs(SegmentSelector *sel);
 
-void SegmentDescriptor::set_type(SegmentType st)
+void SystemDescriptor::set_type(SegmentType st)
 {
 	switch (st)
 	{
@@ -46,7 +46,7 @@ void SegmentDescriptor::set_type(SegmentType st)
 	}
 }
 
-void SegmentDescriptor::set_base(uint64_t base)
+void SystemDescriptor::set_base(uint64_t base)
 {
 	base1 = base & 0xffff;
 	base2 = (base >> 16) & 0xff;
@@ -54,7 +54,7 @@ void SegmentDescriptor::set_base(uint64_t base)
 	base4 = base >> 32;
 }
 
-void SegmentDescriptor::set_limit(uint32_t limit)
+void SystemDescriptor::set_limit(uint32_t limit)
 {
 	limit1 = limit & 0xffff;
 	limit2 = (limit >> 16) & 0xf;
@@ -68,7 +68,7 @@ uint16_t SegmentSelector::get_index()
 	return index;
 }
 
-DescriptorTable<GDT_SIZE> gdt; // Global Descriptor Table
+SystemDescriptor gdt[GDT_SIZE]; // Global Descriptor Table
 
 SegmentSelector        null_selector(0, 0, 0);
 SegmentSelector kernel_code_selector(0, 0, 1);
@@ -93,23 +93,31 @@ void lgdt(DescriptorTableRegister *gdtr)
 
 void gdt_init()
 {
-	SegmentDescriptor *descr;
-	descr = &gdt.table[null_selector.get_index()];
-	descr->set_type(SegmentType::null);
-	descr = &gdt.table[kernel_code_selector.get_index()];
-	descr->set_type(SegmentType::kernel_code);
-	descr = &gdt.table[user_code_selector.get_index()];
-	descr->set_type(SegmentType::user_code);
-	descr = &gdt.table[data_selector.get_index()];
-	descr->set_type(SegmentType::data);
-	descr = &gdt.table[task_state_selector.get_index()];
-	descr->set_type(SegmentType::task_state);
+	gdt[       null_selector.get_index()].set_type(SegmentType::null);
+	gdt[kernel_code_selector.get_index()].set_type(SegmentType::kernel_code);
+	gdt[  user_code_selector.get_index()].set_type(SegmentType::user_code);
+	gdt[       data_selector.get_index()].set_type(SegmentType::data);
+	gdt[ task_state_selector.get_index()].set_type(SegmentType::task_state);
 
 	DescriptorTableRegister gdtr = {
-		.limit = GDT_SIZE * sizeof(SegmentDescriptor),
+		.limit = GDT_SIZE * sizeof(SystemDescriptor),
 		.base = (uint64_t)&gdt
 	};
 	//lgdt(&gdtr);
 
 	set_cs(&kernel_code_selector);
+	//set_ds,es,fs,gs,ss
+}
+
+void GateDescriptor::set_handler(uint8_t _type, interrupt_handler handler)
+{
+	uint64_t offset = (uint64_t)handler;
+	offset1 = offset & 0xffff;
+	offset2 = (offset >> 16) & 0xffff;
+	offset3 = offset >> 32;
+
+	selector = *(uint16_t *)&kernel_code_selector;
+	type = _type;
+	dpl = 3; // Gate must also be accessible from user space.
+	present = 1;
 }

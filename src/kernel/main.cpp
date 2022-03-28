@@ -25,6 +25,7 @@ int kernel_main(uint16_t boot_drive_number, char *mmap)
 
 	// TODO fix far jump in set_cs() and uncomment gdt_init().
 	// gdt_init();
+	idt_init();
 
 	SerialPort sp(COM1_PORT);
 	sp.send("hallo hallo mathe hier\n");
