@@ -1,3 +1,7 @@
+#pragma once
+
+#include <types.h>
+
 #define COM1_PORT 0x3F8
 #define COM2_PORT 0x2F8
 #define COM3_PORT 0x3E8

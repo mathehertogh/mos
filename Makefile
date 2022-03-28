@@ -29,7 +29,8 @@ kernel: build_dirs src/kernel/kernel.ld src/kernel/main.cpp src/kernel/segmentat
 	x86_64-elf-g++ -o build/kernel/interrupt.o $(CCFLAGS) -c src/kernel/interrupt.cpp
 	x86_64-elf-g++ -o build/kernel/set_cs.o $(CCFLAGS) -c src/kernel/set_cs.s
 	x86_64-elf-g++ -o build/kernel/device/serial_port.o $(CCFLAGS) -c src/kernel/device/serial_port.cpp
-	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -static build/kernel/main.o build/kernel/segmentation.o build/kernel/interrupt.o build/kernel/set_cs.o build/kernel/device/serial_port.o
+	x86_64-elf-g++ -o build/kernel/console.o $(CCFLAGS) -c src/kernel/console.cpp
+	x86_64-elf-ld -o build/kernel/kernel.elf --script src/kernel/kernel.ld -N -static build/kernel/main.o build/kernel/segmentation.o build/kernel/interrupt.o build/kernel/set_cs.o build/kernel/device/serial_port.o build/kernel/console.o
 	objcopy -O binary build/kernel/kernel.elf build/kernel/kernel.img
 
 build_dirs:
