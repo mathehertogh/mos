@@ -2,7 +2,7 @@
 #include <segmentation.h>
 #include <console.h>
 
-int y = 5;
+int y = 0;
 
 typedef void(*global_constructor)(void);
 extern "C" global_constructor ctors;
@@ -24,9 +24,9 @@ int kernel_main(uint16_t boot_drive_number, char *mmap)
 	call_global_constructors();
 	console.print("9X7 dubies!\n");
 
-	// TODO fix far jump in set_cs() and uncomment gdt_init().
-	// gdt_init();
+	gdt_init();
 	idt_init();
+	y = 7777 / y;
 
 	console.print("na idt_init()\n");
 

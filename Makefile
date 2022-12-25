@@ -5,7 +5,7 @@ run: mos
 	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio -nographic
 
 debug: mos
-	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio -nographic -S -gdb tcp::1234
+	qemu-system-x86_64 -machine q35 -drive format=raw,file=build/mos.img -serial mon:stdio -nographic -S -gdb tcp::1234 -d int -no-reboot
 
 mos: kernel boot 
 	cat build/boot/boot.img build/kernel/kernel.img > build/mos.img

@@ -14,13 +14,13 @@ private:
 	uint16_t ti    :  1; // Table Indicator
 	uint16_t zero  :  1; // We use 16-byte descriptors, so this bit is zero
 	uint16_t index : 12; // Selector Index
-};
+} __attribute__((packed));
 
 struct DescriptorTableRegister
 {
 	uint16_t limit;
 	uint64_t base;
-};
+} __attribute__((packed));
 
 enum class SegmentType
 {
@@ -48,7 +48,7 @@ private:
 	uint8_t  present      : 1 = 0;
 	uint8_t  limit2       : 4 = 0;
 	uint8_t  avl          : 1 = 0; // Available to software; we don't use it
-	uint8_t  long_mode    : 1 = 1;
+	uint8_t  long_mode    : 1 = 0;
 	uint8_t  operand_size : 1 = 0;
 	uint8_t  granularity  : 1 = 0;
 	uint8_t  base3            = 0;
@@ -57,7 +57,7 @@ private:
 	uint8_t  zero         : 5 = 0;
 	uint8_t  reserved2    : 3 = 0;
 	uint16_t reserved3        = 0;
-};
+} __attribute__((packed));
 
 constexpr size_t GDT_SIZE = 5;
 extern SystemDescriptor gdt[GDT_SIZE]; // Global Descriptor Table
@@ -71,6 +71,30 @@ extern SegmentSelector task_state_selector;
 /* Initialize the Global Offset Table.
  */
 void gdt_init();
+
+constexpr uint64_t KERNEL_STACK = 0x10000;
+
+struct TaskStateSegment
+{
+	uint32_t reserved1       = 0;
+	uint64_t rsp0 = KERNEL_STACK; // Stack Pointer for priviledge level 0
+	uint64_t rsp1            = 0; // Stack Pointer for priviledge level 1
+	uint64_t rsp2            = 0; // Stack Pointer for priviledge level 2
+	uint64_t reserved2       = 0;
+	uint64_t ist1            = 0; // Interrupt Stack Table pointer 1
+	uint64_t ist2            = 0; // Interrupt Stack Table pointer 2
+	uint64_t ist3            = 0; // Interrupt Stack Table pointer 3
+	uint64_t ist4            = 0; // Interrupt Stack Table pointer 4
+	uint64_t ist5            = 0; // Interrupt Stack Table pointer 5
+	uint64_t ist6            = 0; // Interrupt Stack Table pointer 6
+	uint64_t ist7            = 0; // Interrupt Stack Table pointer 7
+	uint64_t reserved3       = 0;
+	uint16_t reserved4       = 0;
+	// TODO: set up (or explicitly disable) I/O permission bitmap
+	uint16_t iomap_offset    = 0; // I/O permission bitmap's offset from TSS-base
+} __attribute__((packed));
+
+extern TaskStateSegment tss;
 
 #define TYPE_INTERRUPT_GATE 0xe
 #define TYPE_TRAP_GATE      0xf
@@ -94,9 +118,9 @@ private:
 	uint16_t present   : 1 = 0;
 	uint16_t offset2       = 0;
 	uint32_t offset3       = 0;
-};
+} __attribute__((packed));
 
-constexpr size_t IDT_SIZE = 5;
+constexpr size_t IDT_SIZE = 256;
 extern GateDescriptor idt[IDT_SIZE]; // Interrupt Descriptor Table
 
 /* Initialize the Interrupt Descriptor Table.

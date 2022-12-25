@@ -31,9 +31,9 @@ protected_mode_activate:
 	ljmp $CODE_SELECTOR, $1f
 1:
 	movw $DATA_SELECTOR, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %ss
+	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %ss
 
 	ret
 

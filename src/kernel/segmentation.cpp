@@ -11,30 +11,34 @@ void SystemDescriptor::set_type(SegmentType st)
 			system = 0;
 			dpl = 0;
 			present = 0;
+			long_mode = 0;
 			operand_size = 0;
 			granularity = 0;
 			break;
 
 		case SegmentType::kernel_code:
-			type = 0b1100;    // code, conforming, ignored, ignored
+			type = 0b1000;    // code, non-conforming, ignored, ignored
 			system = 1;       // user
 			dpl = 0;          // kernel privilege
 			present = 1;      // present
+			long_mode = 1;    // 64-bit long mode
 			operand_size = 0; // required in long mode
 			break;
 
 		case SegmentType::user_code:
-			type = 0b1100;    // code, conforming, ignored, ignored
+			type = 0b1000;    // code, non-conforming, ignored, ignored
 			system = 1;       // user
 			dpl = 3;          // user privilege
 			present = 1;      // present
+			long_mode = 1;    // 64-bit long mode
 			operand_size = 0; // required in long mode
 			break;
 
 		case SegmentType::data:
-			type = 0b1000; // data, ignored, ignored, ignored
+			type = 0b0000; // data, ignored, ignored, ignored
 			system = 1;    // user
 			present = 1;   // present
+			long_mode = 1; // 64-bit long mode
 			break;
 
 		case SegmentType::task_state:
@@ -42,6 +46,7 @@ void SystemDescriptor::set_type(SegmentType st)
 			system = 0;      // system
 			dpl = 0;         // kernel privilege
 			present = 1;     // present
+			long_mode = 1;   // 64-bit long mode
 			granularity = 0; // byte granular
 	}
 }
@@ -76,11 +81,55 @@ SegmentSelector   user_code_selector(3, 0, 2);
 SegmentSelector        data_selector(0, 0, 3);
 SegmentSelector  task_state_selector(0, 0, 4);
 
-/* Load the Global Descriptor Table Register.
+/* Load the Global Descriptor Table Register with gdtr and reload the code
+ * segment descriptor and data segment descriptors with cs and ds respectively.
  */
-void lgdt(DescriptorTableRegister *gdtr)
+void lgdt(DescriptorTableRegister *gdtr, uint16_t ds, uint16_t cs)
 {
-	__asm__ __volatile__ ("lgdt %0\n" : : "m"(gdtr) : );
+
+	asm volatile(
+		"movq %%rsp, %%rbp\n"
+		"lgdt (%0)\n"
+		"movw %w2, %%ds\n"
+		"movw %w2, %%es\n"
+		"pushq %q2\n"
+		"pushq %%rbp\n"
+		"pushf\n"
+		"pushq %q1\n"
+		"movabs $1f, %%rax\n"
+		"pushq %%rax\n"
+		"iretq\n"
+		"nop\n"
+		"nop\n"
+		"nop\n"
+		"nop\n"
+		"1:\n" ::
+		"r" (gdtr), "r" (cs), "r" (ds));
+	// __asm__ __volatile__ (
+	// 	"movq %%rsp, %%rbp\n"
+	// 	"lgdt (%0)\n"
+	// 	"movw %1, %%ds\n"
+	// 	"movw %1, %%es\n"
+	// 	"xorq %%rax, %%rax\n"
+	// 	"movw %1, %%ax\n"
+	// 	"pushq %%rax\n"
+	// 	"pushq %%rbp\n"
+	// 	"pushfq\n"
+	// 	"movw %2, %%ax\n"
+	// 	"pushq %%rax\n"
+	// 	"movabs $1f, %%rax\n"
+	// 	"pushq %%rax\n"
+	// 	"nop\n"
+	// 	"nop\n"
+	// 	"iretq\n"
+	// 	"1:\n"
+	// 	"nop\n"
+	// 	"nop\n"
+	// 	"nop\n"
+	// 	"nop\n"
+	// 	"nop\n"
+	// 	: : "r"(gdtr), "r"(ds), "r"(cs) :
+	// );
 }
 
 // void set_cs(SegmentSelector *sel)
@@ -98,16 +147,19 @@ void gdt_init()
 	gdt[  user_code_selector.get_index()].set_type(SegmentType::user_code);
 	gdt[       data_selector.get_index()].set_type(SegmentType::data);
 	gdt[ task_state_selector.get_index()].set_type(SegmentType::task_state);
+	gdt[ task_state_selector.get_index()].set_base((uint64_t)&tss);
+	gdt[ task_state_selector.get_index()].set_limit(0x68);
 
 	DescriptorTableRegister gdtr = {
 		.limit = GDT_SIZE * sizeof(SystemDescriptor),
 		.base = (uint64_t)&gdt
 	};
-	//lgdt(&gdtr);
-
-	set_cs(&kernel_code_selector);
-	//set_ds,es,fs,gs,ss
+	uint16_t ds = *(uint16_t *)&data_selector;
+	uint16_t cs = *(uint16_t *)&kernel_code_selector;
+	lgdt(&gdtr, ds, cs);
 }
+
+TaskStateSegment tss;
 
 void GateDescriptor::set_handler(uint8_t _type, interrupt_handler handler)
 {
